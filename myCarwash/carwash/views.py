@@ -61,13 +61,15 @@ def user_view_booking(request,user_id):
         selectedUser = User.objects.get(user_id = user_id)
         app = Booking.objects.filter(booking_id=selectedUser.user_id).values
         service = Service.objects.all().values()
+        slots = Slot.objects.all().values()
         user_details = {
             'userDetails': user,
             # 'details': details,
             'user_id':user_id,
             'selectedUser':selectedUser,
             'Allbooking':app,
-            'AllServices':service
+            'AllServices':service,
+            'slots':slots
             
         }
 
@@ -507,10 +509,31 @@ def process_payment(request, user_id):
     
 from django.shortcuts import render
 
-def update_slot(request):
+def update_slot(request,user_id):
     # Add logic here to handle updating the slots if needed
-    return render(request, ' carwash/updateSlot.html')
+    allSlots = Slot.objects.all().values()
 
+    context = {
+        "slots":allSlots,
+        "selected_user":user_id
+    }
+
+    return render(request, 'carwash/updateSlot.html',context)
+
+def updating_slot(request, user_id):
+    if request.method == "POST":
+        slotId = request.POST['slot']
+        availability = int(request.POST['slot_status'])  # Convert to integer
+
+        slot = Slot.objects.get(id=slotId)
+        if availability == 1:
+            slot.slot_status = 1
+        else:
+            slot.slot_status = 0
+
+        slot.save()
+
+    return redirect('update_slot', user_id=user_id)
 
 
 

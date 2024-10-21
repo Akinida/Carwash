@@ -34,4 +34,4 @@ class Payment(models.Model):
 
 class Slot(models.Model):
     slot_status = models.BooleanField(default=False)
-    slot_time = models.DateTimeField()  
+    slot_time = models.TimeField()  

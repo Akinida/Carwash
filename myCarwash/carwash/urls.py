@@ -27,7 +27,8 @@ urlpatterns = [
     path('Staff/<str:user_id>', views.showStaffMain, name='staffMain'),
     path('Staff/<str:user_id>/approve/<str:booking_id>', views.approve_booking, name='approve_booking'),
     path('Staff/myCustomer/<str:user_id>', views.staff_view, name='staff'),
-    path('Staff/<str:user_id>', views.update_slot, name='update_slot'),
+    path('Staff/<int:user_id>/updateSlot/', views.update_slot, name='update_slot'),
+    path('Staff/<int:user_id>/updateSlot/update', views.updating_slot, name='updating_slot'),
 
 
     path('Staff/<str:user_id>/updateService', views.update_service, name='update_service'),
