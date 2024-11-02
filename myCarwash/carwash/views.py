@@ -4,6 +4,12 @@ from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Q
 
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import Booking
+
+from django.views.decorators.csrf import csrf_exempt
+
 
 # Create your views here.
 
@@ -480,32 +486,36 @@ def payment_customer(request, user_id):
     context = {
         'bookings': bookings,
         'Allservices': Service.objects.all(),
+        'user_id':user_id
     }
     return render(request, 'carwash/paymentCustomer.html', context)
 
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from .models import Booking
 
-def process_payment(request, user_id):
+def process_payment(request, user_id,booking_id):
     if request.method == 'POST':
-        payment_proof = request.FILES.get('payment_proof')  # Get uploaded file
-        booking_id = request.POST.get('booking_id')  # Get booking ID from form
-        payment_method = request.POST.get('payment_method')  # Get payment method
+        payment_proof = request.FILES.get('payment_proof')
+        booking_id = request.POST.get('booking_id')
+        payment_method = request.POST.get('payment_method')
 
-        # Retrieve the booking and update payment status
+        # Find the booking associated with this booking_id
         booking = get_object_or_404(Booking, booking_id=booking_id)
 
-        # Save payment details
+        # Update the booking with payment details
         booking.payment_status = True
         booking.payment_proof = payment_proof
         booking.payment_method = payment_method
         booking.save()
 
-        # Return JSON response for success
-        return JsonResponse({"status": "success", "message": "Payment completed"})
+        # Add a success message
+        messages.success(request, "Payment completed successfully.")
+        
+        # Redirect to a confirmation page or the bookings list page
+        return redirect('payment_customer', user_id=user_id)  # Adjust URL name as needed
+
     else:
-        return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
+        # If the request method isn't POST, show an error
+        messages.error(request, "Invalid request.")
+        return redirect('payment_customer', user_id=user_id)  # Redirect to a relevant page
     
 from django.shortcuts import render
 

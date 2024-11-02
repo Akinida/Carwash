@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,14 +10,20 @@
     <style>
         :root {
             /* Custom Colors from your palette */
-            --primary-color: #4CAF50; /* Primary color */
+            --primary-color: #4CAF50;
+            /* Primary color */
         }
+
         body {
-            background-color: #f8f9fa; /* Light background color */
+            background-color: #f8f9fa;
+            /* Light background color */
         }
+
         .navbar {
-            background-color: var(--primary-color); /* Main color for the navbar */
+            background-color: var(--primary-color);
+            /* Main color for the navbar */
         }
+
         .container {
             margin-top: 30px;
             background-color: rgba(255, 255, 255, 0.9);
@@ -24,25 +31,81 @@
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+
         .btn-primary {
-            background-color: #FF5722; /* Main color for buttons */
+            background-color: #FF5722;
+            /* Main color for buttons */
             border: none;
         }
+
         .text-center {
-            text-align: center; /* Center text */
+            text-align: center;
+            /* Center text */
         }
+
         h1 {
             color: var(--primary-color);
         }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background-color: #fff;
+            }
+
+            .navbar,
+            .btn,
+            .mb-3,
+            .text-center.mt-4 {
+                display: none;
+                /* Hide non-essential elements */
+            }
+
+            .container {
+                box-shadow: none;
+                /* Remove shadow for clean print */
+                margin-top: 0;
+                padding: 0;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            table,
+            th,
+            td {
+                border: 1px solid #000;
+            }
+
+            th,
+            td {
+                padding: 8px;
+                text-align: left;
+            }
+        }
+
+        .badge-success {
+            background-color: #28a745;
+            /* Success badge color */
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            /* Warning badge color */
+        }
     </style>
 </head>
+
 <body>
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Admin Dashboard</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -77,31 +140,39 @@
                     <th>Slot</th>
                     <th>No Plate</th>
                     <th>Vehicle Type</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
                 {% if bookings %}
-                    {% for booking in bookings %}
-                    <tr>
-                        <td>{{ booking.booking_id }}</td>
-                        {% for service in Allservices %}
-                            {% if service.service_id == booking.service_id %}
-                                <td>{{ service.service_name }}</td>
-                                <td>RM: {{ service.price }}</td>
-                            {% endif %}
-                        {% endfor %}
-                        <td>{{ booking.slot }}</td>
-                        <td>{{ booking.no_plate }}</td>
-                        <td>{{ booking.vehicle_type }}</td>
-                    </tr>
+                {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.booking_id }}</td>
+                    {% for service in Allservices %}
+                    {% if service.service_id == booking.service_id %}
+                    <td>{{ service.service_name }}</td>
+                    <td>RM: {{ service.price }}</td>
+                    {% endif %}
                     {% endfor %}
+                    <td>{{ booking.slot }}</td>
+                    <td>{{ booking.no_plate }}</td>
+                    <td>{{ booking.vehicle_type }}</td>
+                    <td>
+                        <span
+                            class="badge {% if booking.payment_status %}badge-success{% else %}badge-warning{% endif %}">
+                            {% if booking.payment_status %}Already Paid{% else %}Pending{% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
                 {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center">No bookings available.</td>
-                    </tr>
+                <tr>
+                    <td colspan="7" class="text-center">No bookings available.</td>
+                </tr>
                 {% endif %}
             </tbody>
         </table>
+
 
         <!-- Display the total price and total bookings -->
         <div class="text-center">
@@ -112,65 +183,19 @@
 
         <!-- Download as PDF Button -->
         <div class="text-center mt-4">
-            <button class="btn btn-primary" id="downloadPDF">Download Report as PDF</button>
+            <button class="btn btn-primary" onclick="printReport()">Download Report as PDF</button>
         </div>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- jsPDF Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
     <!-- JavaScript to Handle PDF Download -->
     <script>
-        const { jsPDF } = window.jspdf;
-
-        document.getElementById('downloadPDF').addEventListener('click', function () {
-            const doc = new jsPDF();
-            
-            // Add Title
-            doc.text("Customer Booking Report Of The month", 10, 10);
-            
-            // Add Column Headers
-            const headers = ["Booking ID", "Service", "Price", "Slot", "No Plate", "Vehicle Type"];
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const columnWidth = pageWidth / headers.length;
-
-            headers.forEach((header, index) => {
-                doc.text(header, index * columnWidth + 10, 20);
-            });
-
-            // Add Bookings Data
-            const bookings = [
-                {% for booking in bookings %}
-                    {
-                        booking_id: "{{ booking.booking_id }}",
-                        service_name: "{% for service in Allservices %}{% if service.service_id == booking.service_id %}{{ service.service_name }}{% endif %}{% endfor %}",
-                        price: "RM {{ service.price }}",
-                        slot: "{{ booking.slot }}",
-                        no_plate: "{{ booking.no_plate }}",
-                        vehicle_type: "{{ booking.vehicle_type }}"
-                    },
-                {% endfor %}
-            ];
-
-            bookings.forEach((booking, index) => {
-                const yPosition = 30 + (index * 10); // Starting position for the first row of bookings
-                doc.text(booking.booking_id, 10, yPosition);
-                doc.text(booking.service_name, 10 + columnWidth, yPosition);
-                doc.text(booking.price, 10 + columnWidth * 2, yPosition);
-                doc.text(booking.slot, 10 + columnWidth * 3, yPosition);
-                doc.text(booking.no_plate, 10 + columnWidth * 4, yPosition);
-                doc.text(booking.vehicle_type, 10 + columnWidth * 5, yPosition);
-            });
-
-            // Add Total Price and Total Bookings
-            doc.text(`Total Earning: RM {{ total_price }}`, 10, 30 + (bookings.length * 10) + 10);
-            doc.text(`Total Bookings: {{ total_booking }}`, 10, 30 + (bookings.length * 10) + 20);
-
-            // Save the PDF
-            doc.save('booking_report.pdf');
-        });
+        function printReport() {
+            // Print current page with custom styles
+            window.print();
+        }
     </script>
 </body>
+
 </html>
