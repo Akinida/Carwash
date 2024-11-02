@@ -16,7 +16,7 @@ urlpatterns = [
 
     path('payment/<int:user_id>/', views.payment_customer, name='payment_customer'),
     # Add this to handle POST requests from the payment form
-    path('payment/<int:user_id>/', views.payment_customer, name='process_payment'),
+    path('payment/<int:user_id>/<int:booking_id>', views.process_payment, name='process_payment'),
 
     # path('confirm_payment/<int:booking_id>/', views.confirm_payment, name='confirm_payment'),  # For payment confirmation
 
